@@ -1,99 +1,165 @@
 <!DOCTYPE html>
-<html lang="en" class="loading">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>CalmSounds</title>
-  <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    body.loading .main-content { display: none; }
-    body { overflow-y: auto; font-family: system-ui, sans-serif; }
-    .background {
-      background-size: cover;
-      background-position: center;
-      filter: blur(10px) brightness(0.6);
-      position: absolute;
-      inset: 0;
-      z-index: -1;
-      transition: opacity 0.6s ease;
+    /* Full-page, fixed background */
+    html, body {
+      margin: 0; 
+      padding: 0;
+      height: 100%;
     }
-    input[type="range"] {
-      -webkit-appearance: none;
-      width: 100%;
-      background: transparent;
-      cursor: pointer;
+    body {
+  background-color: #000;
+  background-image: url('https://images.unsplash.com/photo-1542273917363-3b1817f69a2d?ixlib=rb-4.0.3&q=85&fm=jpg&crop=entropy&cs=srgb&w=2400');
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  overflow-y: auto; /* Allow vertical scrolling on mobile */
+  overflow-x: hidden; 
+  font-family: system-ui, sans-serif;
+  color: white;
+  position: relative; /* Ensure the pseudo-element is positioned relative to the body */
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: inherit; /* Use the same background image */
+  background-size: inherit;
+  background-position: inherit;
+  background-attachment: inherit;
+  filter: blur(5px); /* Apply the blur effect */
+  z-index: -1; /* Place it behind the main content */
+}
+
+    /* Main container */
+    .main-content {
+      max-width: 36rem;
+      margin: 5rem auto 2rem;
+      background-color: rgba(61, 61, 61, 0.5);
+      backdrop-filter: blur(5px);
+      border-radius: 1rem;
+      box-shadow: 0 10px 15px rgba(0, 0, 0, 0.3);
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2rem;
     }
-    input[type="range"]::-webkit-slider-thumb {
-      -webkit-appearance: none;
-      height: 16px;
-      width: 16px;
-      background: white;
-      border-radius: 9999px;
-      margin-top: -6px;
-      border: 2px solid #ffffff;
-      cursor: grab;
-    }
-    input[type="range"]:active::-webkit-slider-thumb {
-      cursor: grabbing;
-    }
-    input[type="range"]::-webkit-slider-runnable-track {
-      height: 4px;
-      background: rgba(255, 255, 255, 0.4);
-      border-radius: 2px;
-    }
+    
+    /* Icon styling */
     .icon {
-      display: inline-block;
       width: 24px;
       height: 24px;
-      stroke-width: 2;
-      stroke: currentColor;
+      stroke: white;
       fill: none;
       stroke-linecap: round;
       stroke-linejoin: round;
+      stroke-width: 2;
     }
-    #volume-dropdown {
-      width: 120px;
-      pointer-events: auto;
+
+    /* Utility classes */
+    .flex { display: flex; }
+    .space-x-6 > * + * { margin-left: 1.5rem; }
+    .space-x-4 > * + * { margin-left: 1rem; }
+    .grid { display: grid; }
+    .grid-cols-1 { grid-template-columns: repeat(1, 1fr); }
+    @media (min-width: 640px) {
+      .sm\:grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
+    }
+    .gap-4 { gap: 1rem; }
+    .rounded-xl { border-radius: 0.75rem; }
+    .p-3 { padding: 0.75rem; }
+    .hover\:bg-white\/30:hover { background-color: rgba(255, 255, 255, 0.3); }
+    .bg-white\/20 { background-color: rgba(255, 255, 255, 0.2); }
+    .rounded-full { border-radius: 9999px; }
+    .w-full { width: 100%; }
+    .text-xl { font-size: 1.25rem; }
+    .hidden { display: none; }
+    .relative { position: relative; }
+    .absolute { position: absolute; }
+    .z-10 { z-index: 10; }
+
+    /* Custom volume slider styling */
+    #volume-slider {
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+      width: 150px;  /* Adjust width as needed */
+      height: 4px;   /* Track thickness */
+      background: #ccc;
+      border-radius: 2px;
+      outline: none;
+      cursor: pointer;
+    }
+
+    /* WebKit browsers (Chrome, Safari) thumb style */
+    #volume-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 14px;
+      height: 14px;
+      background: #fff;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 1px solid #999;
+    }
+
+    /* Firefox thumb style */
+    #volume-slider::-moz-range-thumb {
+      width: 14px;
+      height: 14px;
+      background: #fff;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 1px solid #999;
     }
   </style>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="flex items-center justify-center min-h-screen text-white" onclick="hideDropdowns(event)">
-  <!-- Two-layer background for fade -->
-  <div class="background" id="bg1" style="background-image: url('https://images.unsplash.com/photo-1542273917363-3b1817f69a2d?ixlib=rb-4.0.3&q=85&fm=jpg&crop=entropy&cs=srgb&w=1200');"></div>
-  <div class="background" id="bg2" style="opacity: 0;"></div>
+<body onclick="hideDropdowns(event)">
 
-  <div class="main-content w-full max-w-xl bg-white/10 backdrop-blur-xl rounded-2xl shadow-xl p-8 flex flex-col items-center space-y-8">
+  <div class="main-content">
     <!-- ICON CONTROLS -->
     <div class="flex space-x-6 items-center relative z-10">
+      <!-- Toggle Play/Pause button -->
       <button onclick="togglePlay()" class="p-3 bg-white/20 rounded-full hover:bg-white/30">
-        <svg id="play-icon" class="icon">
-          <path d="M6 4h4v16H6z"></path>
-          <path d="M14 4h4v16h-4z"></path>
+        <!-- Start with the 'play' icon -->
+        <svg id="play-icon" class="icon" viewBox="0 0 24 24">
+          <path d="M6 4l15 8-15 8V4z"></path>
         </svg>
       </button>
 
+      <!-- Volume -->
       <div class="relative">
         <button onclick="toggleVolumeSlider()" class="p-3 bg-white/20 rounded-full hover:bg-white/30">
-          <svg id="volume-icon" class="icon">
+          <svg id="volume-icon" class="icon" viewBox="0 0 24 24">
             <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
             <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
             <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
           </svg>
         </button>
-        <div id="volume-dropdown" class="hidden absolute left-1/2 -translate-x-1/2 top-12 bg-white/20 backdrop-blur-md rounded-lg shadow px-4 py-3">
-          <input type="range" min="0" max="1" step="0.01" value="0.2" id="volume-slider" class="w-full h-6">
+        <div id="volume-dropdown" class="hidden absolute left-1/2 -translate-x-1/2 top-12 bg-white/20 rounded-lg shadow px-2 py-2">
+          <input type="range" min="0" max="1" step="0.01" value="0.2" id="volume-slider" class="w-full">
         </div>
       </div>
 
+      <!-- Timer -->
       <div class="relative">
         <button onclick="toggleTimerOptions()" class="p-3 bg-white/20 rounded-full hover:bg-white/30">
-          <svg class="icon">
+          <svg class="icon" viewBox="0 0 24 24">
             <circle cx="12" cy="12" r="10"/>
             <polyline points="12 6 12 12 16 14"/>
           </svg>
         </button>
-        <div id="timer-options" class="hidden absolute left-1/2 -translate-x-1/2 top-12 bg-white/20 backdrop-blur-md rounded-lg shadow px-4 py-3 text-sm w-48 text-center">
-          <div class="flex space-x-2 justify-center mb-2">
+        <div id="timer-options" class="hidden absolute left-1/2 -translate-x-1/2 top-12 bg-white/30 rounded-lg shadow px-4 py-3 text-sm w-48 text-center">
+            <div class="flex space-x-2 justify-center mb-2">
             <input type="number" id="hours" class="w-1/2 p-1 text-black rounded text-center" placeholder="hrs">
             <input type="number" id="minutes" class="w-1/2 p-1 text-black rounded text-center" placeholder="min">
           </div>
@@ -102,73 +168,76 @@
         </div>
       </div>
 
+      <!-- Fourth icon replaced with a heart -->
       <a href="https://github.com/spicy-bear" target="_blank" class="p-3 bg-white/20 rounded-full hover:bg-white/30">
-        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg class="icon" viewBox="0 0 24 24">
           <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
         </svg>
       </a>
     </div>
 
     <!-- SOUNDSCAPE OPTIONS -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-10 w-full">
-      <!-- Existing Soundscapes -->
-      <button onclick="playSound('rain')" class="bg-white/20 hover:bg-white/30 px-6 py-4 rounded-xl flex items-center justify-start space-x-4 w-full">
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
+      <button onclick="playSound('rain')" class="bg-white/20 hover:bg-white/30 p-3 rounded-xl flex items-center space-x-4">
         <span class="text-xl">🌧️</span><span>Gentle Rain</span>
       </button>
-      <button onclick="playSound('forest')" class="bg-white/20 hover:bg-white/30 px-6 py-4 rounded-xl flex items-center justify-start space-x-4 w-full">
+      <button onclick="playSound('forest')" class="bg-white/20 hover:bg-white/30 p-3 rounded-xl flex items-center space-x-4">
         <span class="text-xl">🌲</span><span>Forest Birds</span>
       </button>
-      <button onclick="playSound('ocean')" class="bg-white/20 hover:bg-white/30 px-6 py-4 rounded-xl flex items-center justify-start space-x-4 w-full">
+      <button onclick="playSound('ocean')" class="bg-white/20 hover:bg-white/30 p-3 rounded-xl flex items-center space-x-4">
         <span class="text-xl">🌊</span><span>Ocean Waves</span>
       </button>
-      <button onclick="playSound('fire')" class="bg-white/20 hover:bg-white/30 px-6 py-4 rounded-xl flex items-center justify-start space-x-4 w-full">
+      <button onclick="playSound('fire')" class="bg-white/20 hover:bg-white/30 p-3 rounded-xl flex items-center space-x-4">
         <span class="text-xl">🔥</span><span>Crackling Fire</span>
       </button>
-
-      <!-- New Soundscapes -->
-      <button onclick="playSound('eveningCrickets')" class="bg-white/20 hover:bg-white/30 px-6 py-4 rounded-xl flex items-center justify-start space-x-4 w-full">
+      <button onclick="playSound('eveningCrickets')" class="bg-white/20 hover:bg-white/30 p-3 rounded-xl flex items-center space-x-4">
         <span class="text-xl">🦗</span><span>Evening Crickets</span>
       </button>
-      <button onclick="playSound('oscilatingFan')" class="bg-white/20 hover:bg-white/30 px-6 py-4 rounded-xl flex items-center justify-start space-x-4 w-full">
+      <button onclick="playSound('oscilatingFan')" class="bg-white/20 hover:bg-white/30 p-3 rounded-xl flex items-center space-x-4">
         <span class="text-xl">🍃</span><span>Oscilating Fan</span>
       </button>
-      <button onclick="playSound('thunderstorm')" class="bg-white/20 hover:bg-white/30 px-6 py-4 rounded-xl flex items-center justify-start space-x-4 w-full">
+      <button onclick="playSound('thunderstorm')" class="bg-white/20 hover:bg-white/30 p-3 rounded-xl flex items-center space-x-4">
         <span class="text-xl">⛈️</span><span>Thunderstorm</span>
       </button>
-      <button onclick="playSound('whiteNoise')" class="bg-white/20 hover:bg-white/30 px-6 py-4 rounded-xl flex items-center justify-start space-x-4 w-full">
+      <button onclick="playSound('whiteNoise')" class="bg-white/20 hover:bg-white/30 p-3 rounded-xl flex items-center space-x-4">
         <span class="text-xl">🤍</span><span>White Noise</span>
       </button>
-      <button onclick="playSound('greenNoise')" class="bg-white/20 hover:bg-white/30 px-6 py-4 rounded-xl flex items-center justify-start space-x-4 w-full">
+      <button onclick="playSound('greenNoise')" class="bg-white/20 hover:bg-white/30 p-3 rounded-xl flex items-center space-x-4">
         <span class="text-xl">🌿</span><span>Green Noise</span>
       </button>
-      <button onclick="playSound('rainOnLeaves')" class="bg-white/20 hover:bg-white/30 px-6 py-4 rounded-xl flex items-center justify-start space-x-4 w-full">
+      <button onclick="playSound('rainOnLeaves')" class="bg-white/20 hover:bg-white/30 p-3 rounded-xl flex items-center space-x-4">
         <span class="text-xl">🍃</span><span>Rain on Leaves</span>
       </button>
-      <button onclick="playSound('rainOnWindow')" class="bg-white/20 hover:bg-white/30 px-6 py-4 rounded-xl flex items-center justify-start space-x-4 w-full">
+      <button onclick="playSound('rainOnWindow')" class="bg-white/20 hover:bg-white/30 p-3 rounded-xl flex items-center space-x-4">
         <span class="text-xl">🌦️</span><span>Rain on Window</span>
       </button>
-      <button onclick="playSound('rainOnTent')" class="bg-white/20 hover:bg-white/30 px-6 py-4 rounded-xl flex items-center justify-start space-x-4 w-full">
+      <button onclick="playSound('rainOnTent')" class="bg-white/20 hover:bg-white/30 p-3 rounded-xl flex items-center space-x-4">
         <span class="text-xl">⛺</span><span>Rain on Tent</span>
       </button>
-      <button onclick="playSound('bablingBrook')" class="bg-white/20 hover:bg-white/30 px-6 py-4 rounded-xl flex items-center justify-start space-x-4 w-full">
+      <button onclick="playSound('bablingBrook')" class="bg-white/20 hover:bg-white/30 p-3 rounded-xl flex items-center space-x-4">
         <span class="text-xl">🏞️</span><span>Babling Brook</span>
       </button>
-      <button onclick="playSound('airplaneNoise')" class="bg-white/20 hover:bg-white/30 px-6 py-4 rounded-xl flex items-center justify-start space-x-4 w-full">
+      <button onclick="playSound('airplaneNoise')" class="bg-white/20 hover:bg-white/30 p-3 rounded-xl flex items-center space-x-4">
         <span class="text-xl">✈️</span><span>Airplane Noise</span>
       </button>
     </div>
   </div>
 
   <script>
-    // Global variables and AudioContext setup
-    let currentSound = null;
+    /*********************************************
+     * GLOBAL VARIABLES & AUDIOCONTEXT SETUP
+     *********************************************/
     let audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-    // Create a master gain node for volume control:
-    const masterGain = audioCtx.createGain();
+    let masterGain = audioCtx.createGain();
     masterGain.gain.value = parseFloat(document.getElementById('volume-slider').value);
     masterGain.connect(audioCtx.destination);
 
-    // A data object to store state for each sound.
+    // Track which sound is currently playing (if any),
+    // plus a boolean to handle "play/pause" toggling.
+    let lastSound = null;
+    let isPlaying = false;
+
+    // Crossfade scheduling data
     const soundData = {
       rain: { buffer: null, timer: null, nextStartTime: 0, activeSources: [], crossfadeTime: 1 },
       forest: { buffer: null, timer: null, nextStartTime: 0, activeSources: [], crossfadeTime: 1 },
@@ -186,6 +255,7 @@
       airplaneNoise: { buffer: null, timer: null, nextStartTime: 0, activeSources: [], crossfadeTime: 1 }
     };
 
+    // Audio source URLs
     const sources = {
       rain: 'https://cdn.pixabay.com/download/audio/2024/10/30/audio_42e6870f29.mp3?filename=calming-rain-257596.mp3',
       forest: 'https://cdn.pixabay.com/download/audio/2025/03/28/audio_72e1d59448.mp3?filename=forestbirds-319791.mp3',
@@ -195,7 +265,7 @@
       oscilatingFan: 'https://cdn.pixabay.com/download/audio/2024/12/17/audio_4f0490d7ce.mp3?filename=fan-ventilador-277725.mp3',
       thunderstorm: 'https://cdn.pixabay.com/download/audio/2022/02/10/audio_549a577df5.mp3?filename=thunderstorm-thunder-rain-wind-extreme-19589.mp3',
       whiteNoise: 'https://cdn.pixabay.com/download/audio/2022/03/15/audio_50890d3b1d.mp3?filename=whitenoise-75254.mp3',
-      greenNoise: ' mp3?filename=green-noise.mp3',
+      greenNoise: 'https://cdn.pixabay.com/download/audio/2022/03/15/audio_f4102199ab.mp3?filename=green-noise-75257.mp3',
       rainOnLeaves: 'https://cdn.pixabay.com/download/audio/2024/10/30/audio_42e6870f29.mp3?filename=calming-rain-257596.mp3',
       rainOnWindow: 'https://cdn.pixabay.com/download/audio/2022/07/10/audio_55316fd3f8.mp3?filename=rain-on-the-window-114709.mp3',
       rainOnTent: 'https://cdn.pixabay.com/download/audio/2022/03/09/audio_9072e84a3f.mp3?filename=rain-on-tent-22785.mp3',
@@ -203,6 +273,7 @@
       airplaneNoise: 'https://cdn.pixabay.com/download/audio/2022/03/09/audio_6a31a247ec.mp3?filename=airplane-atmos-22955.mp3'
     };
 
+    // Background images
     const backgrounds = {
       rain: 'https://unsplash.com/photos/Bu1zj2WbjHE/download?force=true&w=2400',
       forest: 'https://unsplash.com/photos/MH_psben7HE/download?force=true&w=2400',
@@ -220,7 +291,9 @@
       airplaneNoise: 'https://unsplash.com/photos/TkKTqPPkWP4/download?w=2400'
     };
 
-    // Schedules playback for a given sound using crossfade.
+    /*********************************************
+     * CROSSFADE SCHEDULING
+     *********************************************/
     function scheduleSound(name) {
       const data = soundData[name];
       const now = audioCtx.currentTime;
@@ -229,14 +302,17 @@
       }
       const source = audioCtx.createBufferSource();
       source.buffer = data.buffer;
-      source.loop = false; // We'll handle looping manually.
+      source.loop = false;
+
       const gainNode = audioCtx.createGain();
       source.connect(gainNode);
       gainNode.connect(masterGain);
 
-      // Crossfade: ramp-up at start, ramp-down at the end.
+      // Fade in
       gainNode.gain.setValueAtTime(0, data.nextStartTime);
       gainNode.gain.linearRampToValueAtTime(1, data.nextStartTime + data.crossfadeTime);
+
+      // Fade out
       const fadeOutStart = data.nextStartTime + data.buffer.duration - data.crossfadeTime;
       gainNode.gain.setValueAtTime(1, fadeOutStart);
       gainNode.gain.linearRampToValueAtTime(0, data.nextStartTime + data.buffer.duration);
@@ -245,110 +321,96 @@
       source.stop(data.nextStartTime + data.buffer.duration);
       data.activeSources.push(source);
 
+      // Schedule next loop
       data.nextStartTime += data.buffer.duration - data.crossfadeTime;
       data.timer = setTimeout(() => scheduleSound(name), (data.buffer.duration - data.crossfadeTime) * 1000);
     }
 
-    // Stops all scheduled sources for a given sound.
     function stopSound(name) {
       const data = soundData[name];
       if (data.timer) {
         clearTimeout(data.timer);
         data.timer = null;
       }
-      data.activeSources.forEach(source => {
-        try { source.stop(); } catch (e) {}
+      data.activeSources.forEach(src => {
+        try { src.stop(); } catch(e) {}
       });
       data.activeSources = [];
+      data.nextStartTime = 0;
     }
 
-    // Plays a given sound. Loads and decodes the buffer if not already available.
+    /*********************************************
+     * PLAY A NEW SOUND
+     *********************************************/
     function playSound(name) {
-      // If a different sound is already playing, stop it.
-      if (currentSound && currentSound !== name) {
-        stopSound(currentSound);
+      // If something else is playing, stop it
+      if (lastSound && lastSound !== name && isPlaying) {
+        stopSound(lastSound);
       }
-      currentSound = name;
-      // Update background image.
-      const img = new Image();
-      img.onload = () => {
-        document.getElementById('bg2').style.backgroundImage = `url('${backgrounds[name]}')`;
-        document.getElementById('bg2').style.opacity = '1';
-        setTimeout(() => {
-          document.getElementById('bg1').style.backgroundImage = document.getElementById('bg2').style.backgroundImage;
-          document.getElementById('bg2').style.opacity = '0';
-        }, 600);
-      };
-      img.src = backgrounds[name];
+      lastSound = name;
+
+      // Update the background image
+      document.body.style.backgroundImage = `url('${backgrounds[name]}')`;
 
       const data = soundData[name];
       if (!data.buffer) {
-        // Fetch, decode, store, and then schedule playback.
+        // Load audio if not loaded
         fetch(sources[name])
-          .then(response => response.arrayBuffer())
-          .then(arrayBuffer => audioCtx.decodeAudioData(arrayBuffer))
-          .then(decodedBuffer => {
-            data.buffer = decodedBuffer;
+          .then(resp => resp.arrayBuffer())
+          .then(buf => audioCtx.decodeAudioData(buf))
+          .then(decoded => {
+            data.buffer = decoded;
             data.nextStartTime = audioCtx.currentTime;
             scheduleSound(name);
+            isPlaying = true;
+            updatePlayIcon(false); // show "pause" icon
           })
-          .catch(e => console.error(`Error decoding ${name} audio`, e));
+          .catch(err => console.error(`Error decoding ${name}`, err));
       } else {
+        // Already have the buffer
         data.nextStartTime = audioCtx.currentTime;
         scheduleSound(name);
+        isPlaying = true;
+        updatePlayIcon(false);
       }
-      updatePlayIcon(false);
     }
 
-    // Toggles play/pause for the current sound.
+    /*********************************************
+     * TOGGLE PLAY/PAUSE
+     *********************************************/
     function togglePlay() {
-      if (currentSound) {
-        // Stop the current sound.
-        stopSound(currentSound);
-        updatePlayIcon(true);
-        currentSound = null;
+      if (isPlaying) {
+        // Currently playing => stop
+        if (lastSound) {
+          stopSound(lastSound);
+        }
+        isPlaying = false;
+        updatePlayIcon(true); // show "play" icon
       } else {
-        // Optionally, you might want to resume the last sound.
-        // For now, toggling play when no sound is active does nothing.
+        // Currently stopped => resume last sound from beginning
+        if (lastSound) {
+          const data = soundData[lastSound];
+          data.nextStartTime = audioCtx.currentTime;
+          scheduleSound(lastSound);
+          isPlaying = true;
+          updatePlayIcon(false); // show "pause" icon
+        }
       }
     }
 
+    // Updates the main button icon
     function updatePlayIcon(isPaused) {
-      document.getElementById('play-icon').innerHTML = isPaused
+      const icon = document.getElementById('play-icon');
+      icon.innerHTML = isPaused
         ? '<path d="M6 4l15 8-15 8V4z"></path>'
         : '<path d="M6 4h4v16H6z"></path><path d="M14 4h4v16h-4z"></path>';
     }
 
-    function toggleVolumeSlider() {
-      const volumeDropdown = document.getElementById('volume-dropdown');
-      const timerOptions = document.getElementById('timer-options');
-      const isHidden = volumeDropdown.classList.contains('hidden');
-      volumeDropdown.classList.toggle('hidden');
-      if (!isHidden) timerOptions.classList.add('hidden');
-    }
-
-    function toggleTimerOptions() {
-      const timerOptions = document.getElementById('timer-options');
-      const volumeDropdown = document.getElementById('volume-dropdown');
-      const isHidden = timerOptions.classList.contains('hidden');
-      timerOptions.classList.toggle('hidden');
-      if (!isHidden) volumeDropdown.classList.add('hidden');
-    }
-
-    function hideDropdowns(event) {
-      const volumeButton = document.querySelector('button[onclick="toggleVolumeSlider()"]');
-      const timerButton = document.querySelector('button[onclick="toggleTimerOptions()"]');
-      const volumeDropdown = document.getElementById('volume-dropdown');
-      const timerOptions = document.getElementById('timer-options');
-      const clickedInsideVolume = volumeDropdown.contains(event.target) || volumeButton.contains(event.target) || event.target.id === 'volume-slider';
-      const clickedInsideTimer = timerOptions.contains(event.target) || timerButton.contains(event.target);
-      if (!clickedInsideVolume) volumeDropdown.classList.add('hidden');
-      if (!clickedInsideTimer) timerOptions.classList.add('hidden');
-    }
-
-    // Volume slider: update the master gain value.
+    /*********************************************
+     * VOLUME CONTROL
+     *********************************************/
     const volumeSlider = document.getElementById('volume-slider');
-    volumeSlider.addEventListener('input', (e) => {
+    volumeSlider.addEventListener('input', () => {
       const vol = parseFloat(volumeSlider.value);
       masterGain.gain.value = vol;
       updateVolumeIcon(vol);
@@ -365,17 +427,25 @@
       }
     }
 
+    /*********************************************
+     * TIMER
+     *********************************************/
+    let stopTimer = null;
+    let countdownInterval = null;
+
     function applyCustomTimer() {
       const hoursInput = document.getElementById('hours');
       const minutesInput = document.getElementById('minutes');
       const timerDisplay = document.getElementById('timer-display');
       const timerOptions = document.getElementById('timer-options');
+
       const hours = parseInt(hoursInput.value) || 0;
       const minutes = parseInt(minutesInput.value) || 0;
       const totalMs = (hours * 60 + minutes) * 60 * 1000;
       if (totalMs > 0) {
         if (stopTimer) clearTimeout(stopTimer);
         if (countdownInterval) clearInterval(countdownInterval);
+
         const endTime = Date.now() + totalMs;
         countdownInterval = setInterval(() => {
           const remaining = endTime - Date.now();
@@ -389,22 +459,52 @@
           timerDisplay.textContent = `⏳ ${hrs}h ${mins}m remaining`;
           timerDisplay.classList.remove('hidden');
         }, 1000);
+
         stopTimer = setTimeout(() => {
-          if (currentSound) {
-            stopSound(currentSound);
+          if (isPlaying && lastSound) {
+            stopSound(lastSound);
+            isPlaying = false;
             updatePlayIcon(true);
-            currentSound = null;
           }
           timerDisplay.classList.add('hidden');
         }, totalMs);
+
         timerOptions.classList.add('hidden');
         hoursInput.value = '';
         minutesInput.value = '';
       }
     }
 
-    let stopTimer = null;
-    let countdownInterval = null;
+    /*********************************************
+     * HIDING DROPDOWNS IF CLICKED OUTSIDE
+     *********************************************/
+    function hideDropdowns(e) {
+      const volBtn = document.querySelector('button[onclick="toggleVolumeSlider()"]');
+      const timerBtn = document.querySelector('button[onclick="toggleTimerOptions()"]');
+      const volumeDropdown = document.getElementById('volume-dropdown');
+      const timerOptions = document.getElementById('timer-options');
+
+      const clickedVolume = volumeDropdown.contains(e.target) || volBtn.contains(e.target) || e.target.id === 'volume-slider';
+      const clickedTimer = timerOptions.contains(e.target) || timerBtn.contains(e.target);
+      if (!clickedVolume) volumeDropdown.classList.add('hidden');
+      if (!clickedTimer) timerOptions.classList.add('hidden');
+    }
+
+    function toggleVolumeSlider() {
+      const volMenu = document.getElementById('volume-dropdown');
+      const timerMenu = document.getElementById('timer-options');
+      const wasHidden = volMenu.classList.contains('hidden');
+      volMenu.classList.toggle('hidden');
+      if (!wasHidden) timerMenu.classList.add('hidden');
+    }
+
+    function toggleTimerOptions() {
+      const timerMenu = document.getElementById('timer-options');
+      const volMenu = document.getElementById('volume-dropdown');
+      const wasHidden = timerMenu.classList.contains('hidden');
+      timerMenu.classList.toggle('hidden');
+      if (!wasHidden) volMenu.classList.add('hidden');
+    }
   </script>
 </body>
 </html>
