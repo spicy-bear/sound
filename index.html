@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en" class="loading">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CalmSounds</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body.loading .main-content { display: none; }
+    body { overflow: hidden; font-family: system-ui, sans-serif; }
+    .background {
+      background-size: cover;
+      background-position: center;
+      filter: blur(10px) brightness(0.6);
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      transition: opacity 0.6s ease;
+    }
+    input[type="range"] {
+      -webkit-appearance: none;
+      width: 100%;
+      background: transparent;
+      cursor: pointer;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      height: 16px;
+      width: 16px;
+      background: white;
+      border-radius: 9999px;
+      margin-top: -6px;
+      border: 2px solid #ffffff;
+      cursor: grab;
+    }
+    input[type="range"]:active::-webkit-slider-thumb {
+      cursor: grabbing;
+    }
+    input[type="range"]::-webkit-slider-runnable-track {
+      height: 4px;
+      background: rgba(255, 255, 255, 0.4);
+      border-radius: 2px;
+    }
+    .icon {
+      display: inline-block;
+      width: 24px;
+      height: 24px;
+      stroke-width: 2;
+      stroke: currentColor;
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    #volume-dropdown {
+      width: 120px;
+      pointer-events: auto;
+    }
+  </style>
+</head>
+<body class="flex items-center justify-center min-h-screen text-white" onclick="hideDropdowns(event)">
+  <!-- Two-layer background for fade -->
+  <div class="background" id="bg1" style="background-image: url('https://images.unsplash.com/photo-1542273917363-3b1817f69a2d?ixlib=rb-4.0.3&q=85&fm=jpg&crop=entropy&cs=srgb&w=1200');"></div>
+  <div class="background" id="bg2" style="opacity: 0;"></div>
+
+  <div class="main-content w-full max-w-xl bg-white/10 backdrop-blur-xl rounded-2xl shadow-xl p-8 flex flex-col items-center space-y-8">
+    <!-- ICON CONTROLS -->
+    <div class="flex space-x-6 items-center relative z-10">
+      <button onclick="togglePlay()" class="p-3 bg-white/20 rounded-full hover:bg-white/30">
+        <svg id="play-icon" class="icon">
+          <path d="M6 4h4v16H6z"></path>
+          <path d="M14 4h4v16h-4z"></path>
+        </svg>
+      </button>
+
+      <div class="relative">
+        <button onclick="toggleVolumeSlider()" class="p-3 bg-white/20 rounded-full hover:bg-white/30">
+          <svg id="volume-icon" class="icon">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+            <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+          </svg>
+        </button>
+        <div id="volume-dropdown" class="hidden absolute left-1/2 -translate-x-1/2 top-12 bg-white/20 backdrop-blur-md rounded-lg shadow px-4 py-3">
+          <input type="range" min="0" max="1" step="0.01" value="0.2" id="volume-slider" class="w-full h-6">
+        </div>
+      </div>
+
+      <div class="relative">
+        <button onclick="toggleTimerOptions()" class="p-3 bg-white/20 rounded-full hover:bg-white/30">
+          <svg class="icon">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12 6 12 12 16 14"/>
+          </svg>
+        </button>
+        <div id="timer-options" class="hidden absolute left-1/2 -translate-x-1/2 top-12 bg-white/20 backdrop-blur-md rounded-lg shadow px-4 py-3 text-sm w-48 text-center">
+          <div class="flex space-x-2 justify-center mb-2">
+            <input type="number" id="hours" class="w-1/2 p-1 text-black rounded text-center" placeholder="hrs">
+            <input type="number" id="minutes" class="w-1/2 p-1 text-black rounded text-center" placeholder="min">
+          </div>
+          <button onclick="applyCustomTimer()" class="w-full bg-white/30 hover:bg-white/40 rounded py-1">Set Timer</button>
+          <div id="timer-display" class="mt-2 text-white/80 hidden"></div>
+        </div>
+      </div>
+
+      <a href="https://your-contact-link.com" target="_blank" class="p-3 bg-white/20 rounded-full hover:bg-white/30">
+        <svg class="icon">
+          <path d="M4 4h16v16H4z"/>
+          <path d="M22 6l-10 7L2 6"/>
+        </svg>
+      </a>
+    </div>
+
+    <!-- SOUNDSCAPE OPTIONS -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-10 w-full">
+      <!-- Existing Soundscapes -->
+      <button onclick="playSound('rain')" class="bg-white/20 hover:bg-white/30 px-6 py-4 rounded-xl flex items-center justify-start space-x-4 w-full">
+        <span class="text-xl">🌧️</span><span>Gentle Rain</span>
+      </button>
+      <button onclick="playSound('forest')" class="bg-white/20 hover:bg-white/30 px-6 py-4 rounded-xl flex items-center justify-start space-x-4 w-full">
+        <span class="text-xl">🌲</span><span>Forest Birds</span>
+      </button>
+      <button onclick="playSound('ocean')" class="bg-white/20 hover:bg-white/30 px-6 py-4 rounded-xl flex items-center justify-start space-x-4 w-full">
+        <span class="text-xl">🌊</span><span>Ocean Waves</span>
+      </button>
+      <button onclick="playSound('fire')" class="bg-white/20 hover:bg-white/30 px-6 py-4 rounded-xl flex items-center justify-start space-x-4 w-full">
+        <span class="text-xl">🔥</span><span>Crackling Fire</span>
+      </button>
+
+      <!-- New Soundscapes -->
+      <button onclick="playSound('eveningCrickets')" class="bg-white/20 hover:bg-white/30 px-6 py-4 rounded-xl flex items-center justify-start space-x-4 w-full">
+        <span class="text-xl">🦗</span><span>Evening Crickets</span>
+      </button>
+      <button onclick="playSound('oscilatingFan')" class="bg-white/20 hover:bg-white/30 px-6 py-4 rounded-xl flex items-center justify-start space-x-4 w-full">
+        <span class="text-xl">🍃</span><span>Oscilating Fan</span>
+      </button>
+      <button onclick="playSound('thunderstorm')" class="bg-white/20 hover:bg-white/30 px-6 py-4 rounded-xl flex items-center justify-start space-x-4 w-full">
+        <span class="text-xl">⛈️</span><span>Thunderstorm</span>
+      </button>
+      <button onclick="playSound('whiteNoise')" class="bg-white/20 hover:bg-white/30 px-6 py-4 rounded-xl flex items-center justify-start space-x-4 w-full">
+        <span class="text-xl">🤍</span><span>White Noise</span>
+      </button>
+      <button onclick="playSound('greenNoise')" class="bg-white/20 hover:bg-white/30 px-6 py-4 rounded-xl flex items-center justify-start space-x-4 w-full">
+        <span class="text-xl">🌿</span><span>Green Noise</span>
+      </button>
+      <button onclick="playSound('rainOnLeaves')" class="bg-white/20 hover:bg-white/30 px-6 py-4 rounded-xl flex items-center justify-start space-x-4 w-full">
+        <span class="text-xl">🍃</span><span>Rain on Leaves</span>
+      </button>
+      <button onclick="playSound('rainOnWindow')" class="bg-white/20 hover:bg-white/30 px-6 py-4 rounded-xl flex items-center justify-start space-x-4 w-full">
+        <span class="text-xl">🌦️</span><span>Rain on Window</span>
+      </button>
+      <button onclick="playSound('rainOnTent')" class="bg-white/20 hover:bg-white/30 px-6 py-4 rounded-xl flex items-center justify-start space-x-4 w-full">
+        <span class="text-xl">⛺</span><span>Rain on Tent</span>
+      </button>
+      <button onclick="playSound('bablingBrook')" class="bg-white/20 hover:bg-white/30 px-6 py-4 rounded-xl flex items-center justify-start space-x-4 w-full">
+        <span class="text-xl">🏞️</span><span>Babling Brook</span>
+      </button>
+      <button onclick="playSound('airplaneNoise')" class="bg-white/20 hover:bg-white/30 px-6 py-4 rounded-xl flex items-center justify-start space-x-4 w-full">
+        <span class="text-xl">✈️</span><span>Airplane Noise</span>
+      </button>
+    </div>
+  </div>
+
+  <script>
+    // Global variables and AudioContext setup
+    let currentSound = null;
+    let audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    // Create a master gain node for volume control:
+    const masterGain = audioCtx.createGain();
+    masterGain.gain.value = parseFloat(document.getElementById('volume-slider').value);
+    masterGain.connect(audioCtx.destination);
+
+    // A data object to store state for each sound.
+    const soundData = {
+      rain: { buffer: null, timer: null, nextStartTime: 0, activeSources: [], crossfadeTime: 1 },
+      forest: { buffer: null, timer: null, nextStartTime: 0, activeSources: [], crossfadeTime: 1 },
+      ocean: { buffer: null, timer: null, nextStartTime: 0, activeSources: [], crossfadeTime: 1 },
+      fire: { buffer: null, timer: null, nextStartTime: 0, activeSources: [], crossfadeTime: 1 },
+      eveningCrickets: { buffer: null, timer: null, nextStartTime: 0, activeSources: [], crossfadeTime: 1 },
+      oscilatingFan: { buffer: null, timer: null, nextStartTime: 0, activeSources: [], crossfadeTime: 1 },
+      thunderstorm: { buffer: null, timer: null, nextStartTime: 0, activeSources: [], crossfadeTime: 1 },
+      whiteNoise: { buffer: null, timer: null, nextStartTime: 0, activeSources: [], crossfadeTime: 1 },
+      greenNoise: { buffer: null, timer: null, nextStartTime: 0, activeSources: [], crossfadeTime: 1 },
+      rainOnLeaves: { buffer: null, timer: null, nextStartTime: 0, activeSources: [], crossfadeTime: 1 },
+      rainOnWindow: { buffer: null, timer: null, nextStartTime: 0, activeSources: [], crossfadeTime: 1 },
+      rainOnTent: { buffer: null, timer: null, nextStartTime: 0, activeSources: [], crossfadeTime: 1 },
+      bablingBrook: { buffer: null, timer: null, nextStartTime: 0, activeSources: [], crossfadeTime: 1 },
+      airplaneNoise: { buffer: null, timer: null, nextStartTime: 0, activeSources: [], crossfadeTime: 1 }
+    };
+
+    const sources = {
+      rain: 'https://cdn.pixabay.com/download/audio/2024/10/30/audio_42e6870f29.mp3?filename=calming-rain-257596.mp3',
+      forest: 'https://cdn.pixabay.com/download/audio/2025/03/28/audio_72e1d59448.mp3?filename=forestbirds-319791.mp3',
+      ocean: 'https://cdn.pixabay.com/download/audio/2024/10/12/audio_7dd52a2e33.mp3?filename=ocean-waves-250310.mp3',
+      fire: 'https://cdn.pixabay.com/download/audio/2024/07/05/audio_cb6e14bf87.mp3?filename=fire-sound-222359.mp3',
+      eveningCrickets: 'https://cdn.pixabay.com/download/audio/2022/02/07/audio_0b16d8e331.mp3?filename=crickets-17862.mp3',
+      oscilatingFan: 'https://cdn.pixabay.com/download/audio/2024/12/17/audio_4f0490d7ce.mp3?filename=fan-ventilador-277725.mp3',
+      thunderstorm: 'https://cdn.pixabay.com/download/audio/2021/09/07/audio_placeholder.mp3?filename=thunderstorm.mp3',
+      whiteNoise: 'https://cdn.pixabay.com/download/audio/2021/09/07/audio_placeholder.mp3?filename=white-noise.mp3',
+      greenNoise: 'https://cdn.pixabay.com/download/audio/2021/09/07/audio_placeholder.mp3?filename=green-noise.mp3',
+      rainOnLeaves: 'https://cdn.pixabay.com/download/audio/2021/09/07/audio_placeholder.mp3?filename=rain-on-leaves.mp3',
+      rainOnWindow: 'https://cdn.pixabay.com/download/audio/2021/09/07/audio_placeholder.mp3?filename=rain-on-window.mp3',
+      rainOnTent: 'https://cdn.pixabay.com/download/audio/2021/09/07/audio_placeholder.mp3?filename=rain-on-ten.mp3',
+      bablingBrook: 'https://cdn.pixabay.com/download/audio/2021/09/07/audio_placeholder.mp3?filename=babling-brook.mp3',
+      airplaneNoise: 'https://cdn.pixabay.com/download/audio/2021/09/07/audio_placeholder.mp3?filename=airplane-noise.mp3'
+    };
+
+    const backgrounds = {
+      rain: 'https://unsplash.com/photos/Bu1zj2WbjHE/download?force=true&w=2400',
+      forest: 'https://unsplash.com/photos/MH_psben7HE/download?force=true&w=2400',
+      ocean: 'https://unsplash.com/photos/dzFZD7ilE5U/download?force=true&w=2400',
+      fire: 'https://unsplash.com/photos/lTZffd_tOnM/download?force=true&w=2400',
+      eveningCrickets: 'https://unsplash.com/photos/pQh-lOBgeZk/download?w=2400',
+      oscilatingFan: 'https://unsplash.com/photos/0xbBiAgawYI/download?w=2400',
+      thunderstorm: 'https://unsplash.com/photos/wF5z4_JzxaU/download?w=2400',
+      whiteNoise: 'https://unsplash.com/photos/T9Gsevu_N8Y/download?w=2400',
+      greenNoise: 'https://unsplash.com/photos/NQ6Lh81BTRs/download?w=2400',
+      rainOnLeaves: 'https://unsplash.com/photos/VFuplxfkjPo/download?w=2400',
+      rainOnWindow: 'https://unsplash.com/photos/yeN9XfiUafY/download?w=1920',
+      rainOnTent: 'https://unsplash.com/photos/hG9FTUCE95A/download?w=2400',
+      bablingBrook: 'https://unsplash.com/photos/m7lf3_skzHs/download?w=2400',
+      airplaneNoise: 'https://unsplash.com/photos/TkKTqPPkWP4/download?w=2400'
+    };
+
+    // Schedules playback for a given sound using crossfade.
+    function scheduleSound(name) {
+      const data = soundData[name];
+      const now = audioCtx.currentTime;
+      if (data.nextStartTime < now) {
+        data.nextStartTime = now;
+      }
+      const source = audioCtx.createBufferSource();
+      source.buffer = data.buffer;
+      source.loop = false; // We'll handle looping manually.
+      const gainNode = audioCtx.createGain();
+      source.connect(gainNode);
+      gainNode.connect(masterGain);
+
+      // Crossfade: ramp-up at start, ramp-down at the end.
+      gainNode.gain.setValueAtTime(0, data.nextStartTime);
+      gainNode.gain.linearRampToValueAtTime(1, data.nextStartTime + data.crossfadeTime);
+      const fadeOutStart = data.nextStartTime + data.buffer.duration - data.crossfadeTime;
+      gainNode.gain.setValueAtTime(1, fadeOutStart);
+      gainNode.gain.linearRampToValueAtTime(0, data.nextStartTime + data.buffer.duration);
+
+      source.start(data.nextStartTime);
+      source.stop(data.nextStartTime + data.buffer.duration);
+      data.activeSources.push(source);
+
+      data.nextStartTime += data.buffer.duration - data.crossfadeTime;
+      data.timer = setTimeout(() => scheduleSound(name), (data.buffer.duration - data.crossfadeTime) * 1000);
+    }
+
+    // Stops all scheduled sources for a given sound.
+    function stopSound(name) {
+      const data = soundData[name];
+      if (data.timer) {
+        clearTimeout(data.timer);
+        data.timer = null;
+      }
+      data.activeSources.forEach(source => {
+        try { source.stop(); } catch (e) {}
+      });
+      data.activeSources = [];
+    }
+
+    // Plays a given sound. Loads and decodes the buffer if not already available.
+    function playSound(name) {
+      // If a different sound is already playing, stop it.
+      if (currentSound && currentSound !== name) {
+        stopSound(currentSound);
+      }
+      currentSound = name;
+      // Update background image.
+      const img = new Image();
+      img.onload = () => {
+        document.getElementById('bg2').style.backgroundImage = `url('${backgrounds[name]}')`;
+        document.getElementById('bg2').style.opacity = '1';
+        setTimeout(() => {
+          document.getElementById('bg1').style.backgroundImage = document.getElementById('bg2').style.backgroundImage;
+          document.getElementById('bg2').style.opacity = '0';
+        }, 600);
+      };
+      img.src = backgrounds[name];
+
+      const data = soundData[name];
+      if (!data.buffer) {
+        // Fetch, decode, store, and then schedule playback.
+        fetch(sources[name])
+          .then(response => response.arrayBuffer())
+          .then(arrayBuffer => audioCtx.decodeAudioData(arrayBuffer))
+          .then(decodedBuffer => {
+            data.buffer = decodedBuffer;
+            data.nextStartTime = audioCtx.currentTime;
+            scheduleSound(name);
+          })
+          .catch(e => console.error(`Error decoding ${name} audio`, e));
+      } else {
+        data.nextStartTime = audioCtx.currentTime;
+        scheduleSound(name);
+      }
+      updatePlayIcon(false);
+    }
+
+    // Toggles play/pause for the current sound.
+    function togglePlay() {
+      if (currentSound) {
+        // Stop the current sound.
+        stopSound(currentSound);
+        updatePlayIcon(true);
+        currentSound = null;
+      } else {
+        // Optionally, you might want to resume the last sound.
+        // For now, toggling play when no sound is active does nothing.
+      }
+    }
+
+    function updatePlayIcon(isPaused) {
+      document.getElementById('play-icon').innerHTML = isPaused
+        ? '<path d="M6 4l15 8-15 8V4z"></path>'
+        : '<path d="M6 4h4v16H6z"></path><path d="M14 4h4v16h-4z"></path>';
+    }
+
+    function toggleVolumeSlider() {
+      const volumeDropdown = document.getElementById('volume-dropdown');
+      const timerOptions = document.getElementById('timer-options');
+      const isHidden = volumeDropdown.classList.contains('hidden');
+      volumeDropdown.classList.toggle('hidden');
+      if (!isHidden) timerOptions.classList.add('hidden');
+    }
+
+    function toggleTimerOptions() {
+      const timerOptions = document.getElementById('timer-options');
+      const volumeDropdown = document.getElementById('volume-dropdown');
+      const isHidden = timerOptions.classList.contains('hidden');
+      timerOptions.classList.toggle('hidden');
+      if (!isHidden) volumeDropdown.classList.add('hidden');
+    }
+
+    function hideDropdowns(event) {
+      const volumeButton = document.querySelector('button[onclick="toggleVolumeSlider()"]');
+      const timerButton = document.querySelector('button[onclick="toggleTimerOptions()"]');
+      const volumeDropdown = document.getElementById('volume-dropdown');
+      const timerOptions = document.getElementById('timer-options');
+      const clickedInsideVolume = volumeDropdown.contains(event.target) || volumeButton.contains(event.target) || event.target.id === 'volume-slider';
+      const clickedInsideTimer = timerOptions.contains(event.target) || timerButton.contains(event.target);
+      if (!clickedInsideVolume) volumeDropdown.classList.add('hidden');
+      if (!clickedInsideTimer) timerOptions.classList.add('hidden');
+    }
+
+    // Volume slider: update the master gain value.
+    const volumeSlider = document.getElementById('volume-slider');
+    volumeSlider.addEventListener('input', (e) => {
+      const vol = parseFloat(volumeSlider.value);
+      masterGain.gain.value = vol;
+      updateVolumeIcon(vol);
+    });
+
+    function updateVolumeIcon(volume) {
+      const volumeIcon = document.getElementById('volume-icon');
+      if (volume === 0) {
+        volumeIcon.innerHTML = '<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line>';
+      } else if (volume < 0.5) {
+        volumeIcon.innerHTML = '<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>';
+      } else {
+        volumeIcon.innerHTML = '<polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>';
+      }
+    }
+
+    function applyCustomTimer() {
+      const hoursInput = document.getElementById('hours');
+      const minutesInput = document.getElementById('minutes');
+      const timerDisplay = document.getElementById('timer-display');
+      const timerOptions = document.getElementById('timer-options');
+      const hours = parseInt(hoursInput.value) || 0;
+      const minutes = parseInt(minutesInput.value) || 0;
+      const totalMs = (hours * 60 + minutes) * 60 * 1000;
+      if (totalMs > 0) {
+        if (stopTimer) clearTimeout(stopTimer);
+        if (countdownInterval) clearInterval(countdownInterval);
+        const endTime = Date.now() + totalMs;
+        countdownInterval = setInterval(() => {
+          const remaining = endTime - Date.now();
+          if (remaining <= 0) {
+            clearInterval(countdownInterval);
+            timerDisplay.classList.add('hidden');
+            return;
+          }
+          const mins = Math.floor((remaining / 1000 / 60) % 60);
+          const hrs = Math.floor((remaining / 1000 / 60 / 60));
+          timerDisplay.textContent = `⏳ ${hrs}h ${mins}m remaining`;
+          timerDisplay.classList.remove('hidden');
+        }, 1000);
+        stopTimer = setTimeout(() => {
+          if (currentSound) {
+            stopSound(currentSound);
+            updatePlayIcon(true);
+            currentSound = null;
+          }
+          timerDisplay.classList.add('hidden');
+        }, totalMs);
+        timerOptions.classList.add('hidden');
+        hoursInput.value = '';
+        minutesInput.value = '';
+      }
+    }
+
+    let stopTimer = null;
+    let countdownInterval = null;
+  </script>
+</body>
+</html>
